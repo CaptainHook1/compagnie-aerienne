@@ -1,4 +1,4 @@
-package com.compagnieaerienne;
+package com.compagnieaerienne.models;
 
 import com.compagnieaerienne.models.*;
 import java.util.*;
@@ -9,9 +9,14 @@ public class Main {
         List<Passager> passagers = new ArrayList<>();
         List<Reservation> reservations = new ArrayList<>();
 
-        Vol vol1 = new Vol("AF123", "Paris", "New York", new Date(), new Date(), "Planifié");
-        Vol vol2 = new Vol("AF124", "Paris", "Tokyo", new Date(), new Date(), "Planifié");
-        Vol vol3 = new Vol("AF125", "Paris", "Tokyo", new Date(), new Date(), "Planifié");
+        Avion avion1 = new Avion("AB123", "Boeing 737", 200);
+        Avion avion2 = new Avion("AB124", "Airbus A320", 180);
+        Avion avion3 = new Avion("AB125", "Boeing 777", 300);
+
+        Vol vol1 = new Vol("AF123", "Paris", "New York", new Date(), new Date(), "Planifié", avion1);
+        Vol vol2 = new Vol("AF124", "Paris", "Tokyo", new Date(), new Date(), "Planifié", avion2);
+        Vol vol3 = new Vol("AF125", "Paris", "Tokyo", new Date(), new Date(), "Planifié", avion3);
+
         vols.add(vol1);
         vols.add(vol2);
         vols.add(vol3);
@@ -29,8 +34,6 @@ public class Main {
         reservations.add(reservation1);
         reservations.add(reservation2);
 
-
-
         int nombreDeVols = vols.size();
         int passagersTransportes = passagers.size();
         double revenusGeneres = nombreDeVols * 1000;
@@ -39,8 +42,6 @@ public class Main {
         System.out.println("Nombre de vols : " + nombreDeVols);
         System.out.println("Passagers transportés : " + passagersTransportes);
         System.out.println("Revenus générés : " + revenusGeneres + "€");
-
-
 
         Map<String, Integer> destinations = new HashMap<>();
         for (Vol vol : vols) {
@@ -59,7 +60,9 @@ public class Main {
         if (reservationTrouvee != null) {
             System.out.println("Réservation trouvée : " + reservationTrouvee.getNumeroReservation());
         } else {
-            System.out.println("Réservation non trouvée.");
+            System.out.println("Réservation non trouvée."); //ça renverra non trouvée car elle R123 n'existe pas :)
         }
     }
 }
+
+

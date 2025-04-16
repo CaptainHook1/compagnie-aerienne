@@ -1,11 +1,14 @@
 package com.compagnieaerienne.models;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class Reservation {
     private String numeroReservation;
     private Date dateReservation;
     private String statut;
+    private static List<Reservation> listeReservations = new ArrayList<>();
 
     public Reservation(String numeroReservation, Date dateReservation, String statut) {
         this.numeroReservation = numeroReservation;
@@ -50,5 +53,29 @@ public class Reservation {
 
     public void setstatut(String statut) {
         this.statut = statut;
+    }
+
+    public static void ajouterReservation(Reservation reservation) {
+        listeReservations.add(reservation);
+    }
+
+    public static Reservation chercherReservation(String numeroReservation) {
+        for (Reservation r : listeReservations) {
+            if (r.getNumeroReservation().equals(numeroReservation)) return r;
+        }
+        return null;
+    }
+
+    public static void modifierReservation(String numeroReservation, Reservation nouvelleReservation) {
+        for (int i = 0; i < listeReservations.size(); i++) {
+            if (listeReservations.get(i).getNumeroReservation().equals(numeroReservation)) {
+                listeReservations.set(i, nouvelleReservation);
+                break;
+            }
+        }
+    }
+
+    public static void supprimerReservation(String numeroReservation) {
+        listeReservations.removeIf(r -> r.getNumeroReservation().equals(numeroReservation));
     }
 }

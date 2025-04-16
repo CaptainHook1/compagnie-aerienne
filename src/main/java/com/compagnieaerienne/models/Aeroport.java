@@ -1,5 +1,6 @@
 package com.compagnieaerienne.models;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class Aeroport {
@@ -8,11 +9,14 @@ public class Aeroport {
     private String description;
     private List<Vol> volsArrivee;
     private List<Vol> volsDepart;
+    private static List<Aeroport> listeAeroports = new ArrayList<>();
 
     public Aeroport(String nom, String ville, String description) {
         this.nom = nom;
         this.ville = ville;
         this.description = description;
+        this.volsArrivee = new ArrayList<>();
+        this.volsDepart = new ArrayList<>();
     }
 
     public void affecterVol(Vol vol, boolean estDepart) {
@@ -62,5 +66,29 @@ public class Aeroport {
 
     public void setVolsDepart(List<Vol> volsDepart) {
         this.volsDepart = volsDepart;
+    }
+
+    public static void ajouterAeroport(Aeroport aeroport) {
+        listeAeroports.add(aeroport);
+    }
+
+    public static Aeroport chercherAeroport(String nom) {
+        for (Aeroport a : listeAeroports) {
+            if (a.getNom().equals(nom)) return a;
+        }
+        return null;
+    }
+
+    public static void modifierAeroport(String nom, Aeroport nouvelAeroport) {
+        for (int i = 0; i < listeAeroports.size(); i++) {
+            if (listeAeroports.get(i).getNom().equals(nom)) {
+                listeAeroports.set(i, nouvelAeroport);
+                break;
+            }
+        }
+    }
+
+    public static void supprimerAeroport(String nom) {
+        listeAeroports.removeIf(a -> a.getNom().equals(nom));
     }
 }
