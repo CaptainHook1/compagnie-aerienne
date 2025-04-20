@@ -1,5 +1,7 @@
 package com.compagnieaerienne.models;
 
+import java.io.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -103,6 +105,7 @@ public class Vol {
     }
 
     public static void ajouterVol(Vol vol) {
+        System.out.println("Ajout du vol: " + vol.getNumeroVol() + " - " + vol.getOrigine() + " -> " + vol.getDestination());
         listeVols.add(vol);
     }
 
@@ -124,5 +127,68 @@ public class Vol {
 
     public static void supprimerVol(String numeroVol) {
         listeVols.removeIf(v -> v.getNumeroVol().equals(numeroVol));
+    }
+
+    public static List<Vol> importerVolsDepuisTxt(String cheminFichier) {
+        List<Vol> volsImportes = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(cheminFichier))) {
+            String line;
+            reader.readLine();
+            while ((line = reader.readLine()) != null) {
+                if (line.trim().isEmpty()) continue;
+
+                String[] data = line.split(";");
+                if (data.length != 7) {
+                    System.out.println("Format invalide pour la ligne: " + line);
+                    continue;
+                }
+
+                String numeroVol = data[0];
+                String origine = data[1];
+                String destination = data[2];
+                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+                Date dateHeureDepart = null;
+                Date dateHeureArrivee = null;
+
+                try {
+                    dateHeureDepart = dateFormat.parse(data[3]);
+                    dateHeureArrivee = dateFormat.parse(data[4]);
+                } catch (Exception e) {
+                    System.out.println("Erreur de format de date pour la ligne: " + line);
+                    continue;
+                }
+
+                String etat = data[5];
+                Avion avion = Avion.chercherAvion(data[6]);
+                Vol vol = new Vol(numeroVol, origine, destination, dateHeureDepart, dateHeureArrivee, etat, avion);
+                volsImportes.add(vol);
+            }
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la lecture du fichier TXT : " + e.getMessage());
+        }
+        return volsImportes;
+    }
+
+    public static void ajouterVol(Vol vol, String cheminFichier) {
+        listeVols.add(vol);
+        sauvegarderVolDansTxt(cheminFichier, vol);
+    }
+
+    public static void sauvegarderVolDansTxt(String cheminFichier, Vol vol) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(cheminFichier, true))) {
+            String volData = vol.getNumeroVol() + ";" +
+                    vol.getOrigine() + ";" +
+                    vol.getDestination() + ";" +
+                    new SimpleDateFormat("dd/MM/yyyy HH:mm").format(vol.getDateHeureDepart()) + ";" +
+                    new SimpleDateFormat("dd/MM/yyyy HH:mm").format(vol.getDateHeureArrivee()) + ";" +
+                    vol.getEtat() + ";" +
+                    vol.getAvion().getImmatriculation();
+            writer.write(volData);
+            writer.newLine();
+
+            System.out.println("Ligne ajoutée dans le fichier: " + volData);
+        } catch (IOException e) {
+            System.err.println("Erreur lors de l'écriture dans le fichier TXT : " + e.getMessage());
+        }
     }
 }

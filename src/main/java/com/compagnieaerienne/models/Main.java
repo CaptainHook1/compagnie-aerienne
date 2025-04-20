@@ -1,33 +1,36 @@
 package com.compagnieaerienne.models;
 
-import com.compagnieaerienne.models.*;
-import java.util.*;
+import com.compagnieaerienne.models.Passager;
+import com.compagnieaerienne.models.Reservation;
+import com.compagnieaerienne.models.Vol;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Date;
 
 public class Main {
     public static void main(String[] args) {
-        List<Vol> vols = new ArrayList<>();
         List<Passager> passagers = new ArrayList<>();
         List<Reservation> reservations = new ArrayList<>();
 
-        Avion avion1 = new Avion("AB123", "Boeing 737", 200);
-        Avion avion2 = new Avion("AB124", "Airbus A320", 180);
-        Avion avion3 = new Avion("AB125", "Boeing 777", 300);
+        List<Vol> vols = Vol.importerVolsDepuisTxt("vols.txt");
 
-        Vol vol1 = new Vol("AF123", "Paris", "New York", new Date(), new Date(), "Planifié", avion1);
-        Vol vol2 = new Vol("AF124", "Paris", "Tokyo", new Date(), new Date(), "Planifié", avion2);
-        Vol vol3 = new Vol("AF125", "Paris", "Tokyo", new Date(), new Date(), "Planifié", avion3);
+        if (vols.isEmpty()) {
+            System.out.println("Aucun vol n'a été importé. Vérifiez le fichier TXT.");
+            return;
+        }
 
-        vols.add(vol1);
-        vols.add(vol2);
-        vols.add(vol3);
+        System.out.println("Nombre de vols importés: " + vols.size());
 
         Passager passager1 = new Passager("123", "Jean Dupont", "123 rue de Paris", "0123456789", "P12345678");
         Passager passager2 = new Passager("124", "Marie Dupont", "456 rue de Lyon", "0123456790", "P98765432");
         passagers.add(passager1);
         passagers.add(passager2);
 
-        passager1.reserverVol(vol1);
-        passager2.reserverVol(vol2);
+        passager1.reserverVol(vols.get(0));
+        passager2.reserverVol(vols.get(1));
 
         Reservation reservation1 = new Reservation("R123", new Date(), "Confirmée");
         Reservation reservation2 = new Reservation("R124", new Date(), "Confirmée");
@@ -60,9 +63,13 @@ public class Main {
         if (reservationTrouvee != null) {
             System.out.println("Réservation trouvée : " + reservationTrouvee.getNumeroReservation());
         } else {
-            System.out.println("Réservation non trouvée."); //ça renverra non trouvée car elle R123 n'existe pas :)
+            System.out.println("Réservation non trouvée.");
         }
+
+        Vol.ajouterVol(new Vol("HP567", "Paris", "Bordeaux",
+                        new Date(2025, 7, 27, 12, 30),
+                        new Date(2025, 7, 27, 13, 5),
+                        "Planifié", new Avion("LT68955", "Boeing", 200)),
+                "vols.txt");
     }
 }
-
-
