@@ -1,0 +1,4 @@
+Immatriculation;Modele;Capacite
+1-TEST;Airbus A320;250
+2-TEST;Boeing 737;480F-TEST1;Airbus A350;300
+

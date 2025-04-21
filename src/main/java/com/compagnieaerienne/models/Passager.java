@@ -2,6 +2,8 @@ package com.compagnieaerienne.models;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.io.*;
+import java.util.Scanner;
 
 public class Passager extends Personne {
     private String passport;
@@ -72,5 +74,41 @@ public class Passager extends Personne {
 
     public static void supprimerPassager(String identifiant) {
         listePassagers.removeIf(p -> p.getIdentifiant().equals(identifiant));
+    }
+
+    public static void sauvegarderPassagerDansTxt(String cheminFichier, Passager passager) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(cheminFichier, true))) {
+            String ligne = passager.getIdentifiant() + ";" +
+                    passager.getNom() + ";" +
+                    passager.getAdresse() + ";" +
+                    passager.getContact() + ";" +
+                    passager.getPassport();
+            writer.write(ligne);
+            writer.newLine();
+            System.out.println("Passager sauvegardé : " + ligne);
+        } catch (IOException e) {
+            System.err.println("Erreur lors de l'écriture dans le fichier TXT : " + e.getMessage());
+        }
+    }
+
+    public static List<Passager> importerPassagersDepuisTxt(String cheminFichier) {
+        List<Passager> passagersImportes = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(cheminFichier))) {
+            String ligne;
+            reader.readLine();
+            while ((ligne = reader.readLine()) != null) {
+                if (ligne.trim().isEmpty()) continue;
+                String[] data = ligne.split(";");
+                if (data.length != 5) {
+                    System.out.println("Ligne invalide : " + ligne);
+                    continue;
+                }
+                Passager p = new Passager(data[0], data[1], data[2], data[3], data[4]);
+                passagersImportes.add(p);
+            }
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la lecture du fichier TXT : " + e.getMessage());
+        }
+        return passagersImportes;
     }
 }
