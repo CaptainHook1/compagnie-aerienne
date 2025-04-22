@@ -1,5 +1,7 @@
 package com.compagnieaerienne.models;
 
+import java.io.FileWriter;
+import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.Scanner;
@@ -10,6 +12,12 @@ public class Main {
         String fichierVols = "vols.txt";
         String fichierPassagers = "passagers.txt";
         String fichierReservations = "reservations.txt";
+
+        try {
+            new FileWriter(fichierAvions, false).close();
+        } catch (IOException e) {
+            System.err.println("Erreur lors de la réinitialisation des fichiers.");
+        }
 
         System.out.println("=== BIENVENUE DANS LE SYSTÈME DE RÉSERVATION DE COMPAGNIE AÉRIENNE ===");
         System.out.println("\nChargement des données depuis les fichiers...");
@@ -64,20 +72,20 @@ public class Main {
                 Vol volChoisi = Vol.chercherVol(codeVol);
                 if (volChoisi != null) {
                     System.out.println("> Vérification de la disponibilité...");
-                    Reservation nouvelleReservation = new Reservation(volChoisi.getNumeroVol(), volChoisi.getDateHeureDepart(), "Réservée", passportSaisi);
-                    Reservation.sauvegarderReservationDansTxt(fichierReservations, nouvelleReservation);
-
+                    passagerTrouve.reserverVol(volChoisi, fichierReservations);
                     System.out.println("> Réservation en cours...");
                     System.out.println("> Réservation confirmée ! 🎉");
 
                     System.out.println("\nInformations de la réservation :");
                     System.out.println("-------------------------------------");
-                    System.out.println("Numéro de réservation : " + nouvelleReservation.getNumeroReservation());
+                    System.out.println("Numéro de réservation : " + passagerTrouve.obtenirDerniereReservation().getNumeroReservation());
                     System.out.println("Passager : " + passagerTrouve.getNom());
                     System.out.println("Vol : " + volChoisi.getNumeroVol() + " | " + volChoisi.getOrigine() + " -> " + volChoisi.getDestination()
                             + " | " + dateFormat.format(volChoisi.getDateHeureDepart()) + " à " + heureFormat.format(volChoisi.getDateHeureDepart()));
                     System.out.println("Avion assigné : " + volChoisi.getAvion().getModele());
                     System.out.println("-------------------------------------");
+
+                    System.out.println("\nLes données ont été enregistrées dans " + fichierReservations + " ✅");
                 } else {
                     System.out.println("Vol non trouvé.");
                 }
@@ -87,20 +95,14 @@ public class Main {
             String voirRes = scanner.nextLine().trim();
             if (voirRes.equalsIgnoreCase("oui")) {
                 System.out.println("\n> Vos réservations :");
-                List<Reservation> toutes = Reservation.importerReservationsDepuisTxt(fichierReservations);
-                int compteur = 1;
-                for (Reservation r : toutes) {
-                    if (r.getPassport().equals(passportSaisi)) {
-                        Vol v = Vol.chercherVol(r.getNumeroReservation());
-                        if (v != null) {
-                            System.out.println("[" + compteur + "] Vol " + v.getNumeroVol() + " | " + v.getOrigine() + " -> " + v.getDestination()
-                                    + " | " + dateFormat.format(v.getDateHeureDepart()) + " à " + heureFormat.format(v.getDateHeureDepart()));
-                            compteur++;
-                        }
+                List<Reservation> reservations = Reservation.chercherReservationsParPassport(passagerTrouve.getPassport(), fichierReservations);
+                for (int i = 0; i < reservations.size(); i++) {
+                    Reservation res = reservations.get(i);
+                    Vol vol = Vol.chercherVol(res.getNumeroReservation());
+                    if (vol != null) {
+                        System.out.println("[" + (i + 1) + "] Vol " + vol.getNumeroVol() + " | " + vol.getOrigine() + " -> " + vol.getDestination()
+                                + " | " + dateFormat.format(vol.getDateHeureDepart()) + " à " + heureFormat.format(vol.getDateHeureDepart()));
                     }
-                }
-                if (compteur == 1) {
-                    System.out.println("Aucune réservation trouvée.");
                 }
             }
         } else {

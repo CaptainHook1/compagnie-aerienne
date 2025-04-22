@@ -127,11 +127,22 @@ public class Reservation {
         return reservations;
     }
 
-    public static List<Reservation> chercherReservationsParPassport(String passport) {
-        List<Reservation> resultats = new ArrayList<>();
-        for (Reservation r : listeReservations) {
-            if (r.getPassport().equalsIgnoreCase(passport)) resultats.add(r);
+    public static List<Reservation> chercherReservationsParPassport(String passeport, String cheminFichier) {
+        List<Reservation> resultat = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(cheminFichier))) {
+            String ligne;
+            reader.readLine(); // ignorer l'en-tête
+            while ((ligne = reader.readLine()) != null) {
+                String[] data = ligne.split(";");
+                if (data.length == 4 && data[3].equalsIgnoreCase(passeport)) {
+                    Reservation r = new Reservation(data[0], new SimpleDateFormat("dd/MM/yyyy HH:mm").parse(data[1]), data[2], data[3]);
+                    resultat.add(r);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Erreur lors de la lecture des réservations : " + e.getMessage());
         }
-        return resultats;
+        return resultat;
     }
+
 }

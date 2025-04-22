@@ -17,6 +17,7 @@ public class ImportationVols {
         if (accessToken == null) return;
 
         new PrintWriter(cheminFichier).close();
+        new PrintWriter("avions.txt").close();
 
         OkHttpClient client = new OkHttpClient();
 
@@ -48,7 +49,6 @@ public class ImportationVols {
         """;
 
         RequestBody body = RequestBody.create(jsonRequestBody, MediaType.get("application/vnd.amadeus+json"));
-
         Request request = new Request.Builder()
                 .url(API_URL)
                 .addHeader("Authorization", "Bearer " + accessToken)
@@ -95,8 +95,16 @@ public class ImportationVols {
 
                     Vol nouveauVol = new Vol(numeroVol, origine, destination, dateDepart, dateArrivee, "Planifié", avionAssocie);
                     Vol.ajouterVol(nouveauVol, cheminFichier);
+
+                    Aeroport aeroportDepart = new Aeroport(origine, origine, "Départ depuis " + origine);
+                    Aeroport aeroportArrivee = new Aeroport(destination, destination, "Arrivée à " + destination);
+                    Aeroport.ajouterAeroport(aeroportDepart);
+                    Aeroport.ajouterAeroport(aeroportArrivee);
+
+                    aeroportDepart.affecterVol(nouveauVol, true);
+                    aeroportArrivee.affecterVol(nouveauVol, false);
+
                 } catch (ParseException e) {
-                    // Erreur de parsing
                 }
             }
         }

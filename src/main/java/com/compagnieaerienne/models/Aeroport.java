@@ -1,5 +1,6 @@
 package com.compagnieaerienne.models;
 
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,6 @@ public class Aeroport {
         } else {
             volsArrivee.add(vol);
         }
-        System.out.println("Le vol " + vol.getNumeroVol() + " a été affecté à l'aéroport " + nom);
     }
 
     public String getNom() {
@@ -69,19 +69,22 @@ public class Aeroport {
     }
 
     public static void ajouterAeroport(Aeroport aeroport) {
+        for (Aeroport a : listeAeroports) {
+            if (a.getNom().equalsIgnoreCase(aeroport.getNom())) return;
+        }
         listeAeroports.add(aeroport);
     }
 
     public static Aeroport chercherAeroport(String nom) {
         for (Aeroport a : listeAeroports) {
-            if (a.getNom().equals(nom)) return a;
+            if (a.getNom().equalsIgnoreCase(nom)) return a;
         }
         return null;
     }
 
     public static void modifierAeroport(String nom, Aeroport nouvelAeroport) {
         for (int i = 0; i < listeAeroports.size(); i++) {
-            if (listeAeroports.get(i).getNom().equals(nom)) {
+            if (listeAeroports.get(i).getNom().equalsIgnoreCase(nom)) {
                 listeAeroports.set(i, nouvelAeroport);
                 break;
             }
@@ -89,6 +92,32 @@ public class Aeroport {
     }
 
     public static void supprimerAeroport(String nom) {
-        listeAeroports.removeIf(a -> a.getNom().equals(nom));
+        listeAeroports.removeIf(a -> a.getNom().equalsIgnoreCase(nom));
+    }
+
+    public static void sauvegarderAeroportDansTxt(String cheminFichier, Aeroport aeroport) {
+        try (BufferedWriter writer = new BufferedWriter(new FileWriter(cheminFichier, true))) {
+            String ligne = aeroport.getNom() + ";" + aeroport.getVille() + ";" + aeroport.getDescription();
+            writer.write(ligne);
+            writer.newLine();
+        } catch (IOException e) {
+        }
+    }
+
+    public static List<Aeroport> importerAeroportsDepuisTxt(String cheminFichier) {
+        List<Aeroport> aeroportsImportes = new ArrayList<>();
+        try (BufferedReader reader = new BufferedReader(new FileReader(cheminFichier))) {
+            String ligne;
+            while ((ligne = reader.readLine()) != null) {
+                if (ligne.trim().isEmpty()) continue;
+                String[] data = ligne.split(";");
+                if (data.length != 3) continue;
+                Aeroport aeroport = new Aeroport(data[0], data[1], data[2]);
+                ajouterAeroport(aeroport);
+                aeroportsImportes.add(aeroport);
+            }
+        } catch (IOException e) {
+        }
+        return aeroportsImportes;
     }
 }

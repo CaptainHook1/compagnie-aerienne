@@ -15,9 +15,10 @@ public class Passager extends Personne {
         this.reservations = new ArrayList<>();
     }
 
-    public void reserverVol(Vol vol) {
-        Reservation reservation = new Reservation(vol.getNumeroVol(), vol.getDateHeureDepart(), "Réservée", this.passport);
+    public void reserverVol(Vol vol, String cheminFichier) {
+        Reservation reservation = new Reservation(vol.getNumeroVol(), vol.getDateHeureDepart(), "Réservée", this.getPassport());
         reservations.add(reservation);
+        Reservation.sauvegarderReservationDansTxt(cheminFichier, reservation);
     }
 
     public void annulerReservation(String numeroReservation) {
