@@ -2,9 +2,7 @@ package com.compagnieaerienne.models;
 
 import java.io.*;
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
+import java.util.*;
 
 public class Vol {
     private String numeroVol;
@@ -36,12 +34,12 @@ public class Vol {
     }
 
     public void planifierVol() {
-        System.out.println("Le vol " + numeroVol + " est maintenant planifié.");
+        // System.out.println("Le vol " + numeroVol + " est maintenant planifié.");
     }
 
     public void annulerVol() {
         this.etat = "Annulé";
-        System.out.println("Le vol " + numeroVol + " a été annulé.");
+        // System.out.println("Le vol " + numeroVol + " a été annulé.");
     }
 
     public void modifierVol(String origine, String destination, Date dateHeureDepart, Date dateHeureArrivee) {
@@ -49,11 +47,11 @@ public class Vol {
         this.destination = destination;
         this.dateHeureDepart = dateHeureDepart;
         this.dateHeureArrivee = dateHeureArrivee;
-        System.out.println("Le vol " + numeroVol + " a été modifié.");
+        // System.out.println("Le vol " + numeroVol + " a été modifié.");
     }
 
     public void listingPassager() {
-        System.out.println("Liste des passagers pour le vol " + numeroVol);
+        // System.out.println("Liste des passagers pour le vol " + numeroVol);
     }
 
     public String getNumeroVol() {
@@ -105,8 +103,11 @@ public class Vol {
     }
 
     public static void ajouterVol(Vol vol) {
-        System.out.println("Ajout du vol: " + vol.getNumeroVol() + " - " + vol.getOrigine() + " -> " + vol.getDestination());
+        for (Vol v : listeVols) {
+            if (v.getNumeroVol().equals(vol.getNumeroVol())) return;
+        }
         listeVols.add(vol);
+        sauvegarderVolDansTxt("vols.txt", vol);
     }
 
     public static Vol chercherVol(String numeroVol) {
@@ -131,6 +132,7 @@ public class Vol {
 
     public static List<Vol> importerVolsDepuisTxt(String cheminFichier) {
         List<Vol> volsImportes = new ArrayList<>();
+        Set<String> numerosVus = new HashSet<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(cheminFichier))) {
             String line;
             reader.readLine();
@@ -138,8 +140,8 @@ public class Vol {
                 if (line.trim().isEmpty()) continue;
 
                 String[] data = line.split(";");
-                if (data.length != 7) {
-                    System.out.println("Format invalide pour la ligne: " + line);
+                if (data.length != 7 || numerosVus.contains(data[0])) {
+                    // System.out.println("Format invalide ou doublon pour la ligne: " + line);
                     continue;
                 }
 
@@ -147,14 +149,14 @@ public class Vol {
                 String origine = data[1];
                 String destination = data[2];
                 SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
-                Date dateHeureDepart = null;
-                Date dateHeureArrivee = null;
+                Date dateHeureDepart;
+                Date dateHeureArrivee;
 
                 try {
                     dateHeureDepart = dateFormat.parse(data[3]);
                     dateHeureArrivee = dateFormat.parse(data[4]);
                 } catch (Exception e) {
-                    System.out.println("Erreur de format de date pour la ligne: " + line);
+                    // System.out.println("Erreur de format de date pour la ligne: " + line);
                     continue;
                 }
 
@@ -162,14 +164,19 @@ public class Vol {
                 Avion avion = Avion.chercherAvion(data[6]);
                 Vol vol = new Vol(numeroVol, origine, destination, dateHeureDepart, dateHeureArrivee, etat, avion);
                 volsImportes.add(vol);
+                listeVols.add(vol);
+                numerosVus.add(numeroVol);
             }
         } catch (IOException e) {
-            System.err.println("Erreur lors de la lecture du fichier TXT : " + e.getMessage());
+            // System.err.println("Erreur lors de la lecture du fichier TXT : " + e.getMessage());
         }
         return volsImportes;
     }
 
     public static void ajouterVol(Vol vol, String cheminFichier) {
+        for (Vol v : listeVols) {
+            if (v.getNumeroVol().equals(vol.getNumeroVol())) return;
+        }
         listeVols.add(vol);
         sauvegarderVolDansTxt(cheminFichier, vol);
     }
@@ -185,10 +192,13 @@ public class Vol {
                     vol.getAvion().getImmatriculation();
             writer.write(volData);
             writer.newLine();
-
-            System.out.println("Ligne ajoutée dans le fichier: " + volData);
+            // System.out.println("Ligne ajoutée dans le fichier: " + volData);
         } catch (IOException e) {
-            System.err.println("Erreur lors de l'écriture dans le fichier TXT : " + e.getMessage());
+            // System.err.println("Erreur lors de l'écriture dans le fichier TXT : " + e.getMessage());
         }
+    }
+
+    public static List<Vol> getListeVols() {
+        return listeVols;
     }
 }

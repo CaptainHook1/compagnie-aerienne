@@ -1,57 +1,112 @@
 package com.compagnieaerienne.models;
 
-import com.compagnieaerienne.models.Passager;
-import com.compagnieaerienne.models.Reservation;
-import com.compagnieaerienne.models.Vol;
-
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Date;
+import java.util.Scanner;
 
 public class Main {
     public static void main(String[] args) {
         String fichierAvions = "avions.txt";
         String fichierVols = "vols.txt";
         String fichierPassagers = "passagers.txt";
+        String fichierReservations = "reservations.txt";
 
-        Avion avionAjoute = new Avion("F-TEST2", "Embraer E190", 100);
-        Avion.sauvegarderAvionDansTxt(fichierAvions, avionAjoute);
+        System.out.println("=== BIENVENUE DANS LE SYSTÈME DE RÉSERVATION DE COMPAGNIE AÉRIENNE ===");
+        System.out.println("\nChargement des données depuis les fichiers...");
 
-        List<Avion> avionsImportes = Avion.importerAvionsDepuisTxt(fichierAvions);
-        System.out.println("Avions importés :");
-        for (Avion a : avionsImportes) {
-            System.out.println(a.getImmatriculation() + " - " + a.getModele() + " - " + a.getCapacite());
-        }
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
         try {
-            Date depart = dateFormat.parse("27/08/3925 12:30");
-            Date arrivee = dateFormat.parse("27/08/3925 13:05");
-            Avion avionPourVol = Avion.chercherAvion("LT68955");
-            if (avionPourVol != null) {
-                Vol volAjoute = new Vol("HP567", "Paris", "Bordeaux", depart, arrivee, "Planifié", avionPourVol);
-                Vol.ajouterVol(volAjoute, fichierVols);
-            }
+            ImportationVols.importerVolsDepuisAPI(fichierVols);
         } catch (Exception e) {
-            System.err.println("Erreur de parsing des dates");
+            System.err.println("Échec lors de l'importation des vols depuis l'API.");
         }
 
-        List<Vol> volsImportes = Vol.importerVolsDepuisTxt(fichierVols);
-        System.out.println("Vols importés :");
-        for (Vol v : volsImportes) {
-            System.out.println(v.getNumeroVol() + " - " + v.getOrigine() + " -> " + v.getDestination());
+        List<Vol> vols = Vol.importerVolsDepuisTxt(fichierVols);
+        List<Avion> avions = Avion.importerAvionsDepuisTxt(fichierAvions);
+        List<Passager> passagers = Passager.importerPassagersDepuisTxt(fichierPassagers);
+
+        System.out.println("> Vols importés depuis " + fichierVols + " : " + vols.size() + " vols disponibles");
+        System.out.println("> Passagers existants importés depuis " + fichierPassagers + " : " + passagers.size() + " passagers enregistrés");
+
+        System.out.println("\n---------------------------------------------------");
+        System.out.println("Liste des vols disponibles :");
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM");
+        SimpleDateFormat heureFormat = new SimpleDateFormat("HH:mm");
+        for (Vol vol : vols) {
+            System.out.println("[ID: " + vol.getNumeroVol() + "] " + vol.getOrigine() + " -> " + vol.getDestination()
+                    + " | Date: " + dateFormat.format(vol.getDateHeureDepart())
+                    + " | Heure: " + heureFormat.format(vol.getDateHeureDepart()));
+        }
+        System.out.println("---------------------------------------------------");
+
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("\nEntrez votre numéro de passeport : ");
+        String passportSaisi = scanner.nextLine().trim();
+
+        Passager passagerTrouve = null;
+        for (Passager p : passagers) {
+            if (p.getPassport().equalsIgnoreCase(passportSaisi)) {
+                passagerTrouve = p;
+                break;
+            }
         }
 
-        Passager passagerAjoute = new Passager("62438", "Manon George", "12 rue Victor Hugo", "0674894632", "FR197536");
-        Passager.sauvegarderPassagerDansTxt(fichierPassagers, passagerAjoute);
+        if (passagerTrouve != null) {
+            System.out.println("Passager reconnu : " + passagerTrouve.getNom());
 
-        List<Passager> passagersImportes = Passager.importerPassagersDepuisTxt(fichierPassagers);
-        System.out.println("Passagers importés :");
-        for (Passager p : passagersImportes) {
-            p.obtenirInfos();
+            System.out.print("\nSouhaitez-vous réserver un vol ? (oui/non) : ");
+            String reponse = scanner.nextLine().trim();
+
+            if (reponse.equalsIgnoreCase("oui")) {
+                System.out.print("Entrez le code du vol souhaité : ");
+                String codeVol = scanner.nextLine().trim();
+
+                Vol volChoisi = Vol.chercherVol(codeVol);
+                if (volChoisi != null) {
+                    System.out.println("> Vérification de la disponibilité...");
+                    Reservation nouvelleReservation = new Reservation(volChoisi.getNumeroVol(), volChoisi.getDateHeureDepart(), "Réservée", passportSaisi);
+                    Reservation.sauvegarderReservationDansTxt(fichierReservations, nouvelleReservation);
+
+                    System.out.println("> Réservation en cours...");
+                    System.out.println("> Réservation confirmée ! 🎉");
+
+                    System.out.println("\nInformations de la réservation :");
+                    System.out.println("-------------------------------------");
+                    System.out.println("Numéro de réservation : " + nouvelleReservation.getNumeroReservation());
+                    System.out.println("Passager : " + passagerTrouve.getNom());
+                    System.out.println("Vol : " + volChoisi.getNumeroVol() + " | " + volChoisi.getOrigine() + " -> " + volChoisi.getDestination()
+                            + " | " + dateFormat.format(volChoisi.getDateHeureDepart()) + " à " + heureFormat.format(volChoisi.getDateHeureDepart()));
+                    System.out.println("Avion assigné : " + volChoisi.getAvion().getModele());
+                    System.out.println("-------------------------------------");
+                } else {
+                    System.out.println("Vol non trouvé.");
+                }
+            }
+
+            System.out.print("\nSouhaitez-vous consulter vos réservations ? (oui/non) : ");
+            String voirRes = scanner.nextLine().trim();
+            if (voirRes.equalsIgnoreCase("oui")) {
+                System.out.println("\n> Vos réservations :");
+                List<Reservation> toutes = Reservation.importerReservationsDepuisTxt(fichierReservations);
+                int compteur = 1;
+                for (Reservation r : toutes) {
+                    if (r.getPassport().equals(passportSaisi)) {
+                        Vol v = Vol.chercherVol(r.getNumeroReservation());
+                        if (v != null) {
+                            System.out.println("[" + compteur + "] Vol " + v.getNumeroVol() + " | " + v.getOrigine() + " -> " + v.getDestination()
+                                    + " | " + dateFormat.format(v.getDateHeureDepart()) + " à " + heureFormat.format(v.getDateHeureDepart()));
+                            compteur++;
+                        }
+                    }
+                }
+                if (compteur == 1) {
+                    System.out.println("Aucune réservation trouvée.");
+                }
+            }
+        } else {
+            System.out.println("Aucun passager trouvé avec ce numéro de passeport.");
         }
+
+        System.out.println("\nMerci d'avoir utilisé notre système ✈️");
     }
 }

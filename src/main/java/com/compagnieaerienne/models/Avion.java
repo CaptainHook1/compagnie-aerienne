@@ -3,7 +3,6 @@ package com.compagnieaerienne.models;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.*;
-import java.util.Scanner;
 
 public class Avion {
     private String immatriculation;
@@ -18,11 +17,11 @@ public class Avion {
     }
 
     public void affecterVol() {
-        System.out.println("L'avion " + immatriculation + " a été affecté à un vol.");
+        // System.out.println("L'avion " + immatriculation + " a été affecté à un vol.");
     }
 
     public void verifierDisponibilite() {
-        System.out.println("Vérification de la disponibilité de l'avion " + immatriculation + ".");
+        // System.out.println("Vérification de la disponibilité de l'avion " + immatriculation + ".");
     }
 
     public String getImmatriculation() {
@@ -50,7 +49,11 @@ public class Avion {
     }
 
     public static void ajouterAvion(Avion avion) {
+        for (Avion a : listeAvions) {
+            if (a.getImmatriculation().equals(avion.getImmatriculation())) return;
+        }
         listeAvions.add(avion);
+        sauvegarderAvionDansTxt("avions.txt", avion);
     }
 
     public static Avion chercherAvion(String immatriculation) {
@@ -80,9 +83,9 @@ public class Avion {
                     avion.getCapacite();
             writer.write(ligne);
             writer.newLine();
-            System.out.println("Avion sauvegardé : " + ligne);
+            // System.out.println("Avion sauvegardé : " + ligne);
         } catch (IOException e) {
-            System.err.println("Erreur lors de l'écriture dans le fichier TXT : " + e.getMessage());
+            // System.err.println("Erreur lors de l'écriture dans le fichier TXT : " + e.getMessage());
         }
     }
 
@@ -95,7 +98,7 @@ public class Avion {
                 if (ligne.trim().isEmpty()) continue;
                 String[] data = ligne.split(";");
                 if (data.length != 3) {
-                    System.out.println("Ligne invalide : " + ligne);
+                    // System.out.println("Ligne invalide : " + ligne);
                     continue;
                 }
                 String immatriculation = data[0];
@@ -104,15 +107,20 @@ public class Avion {
                 try {
                     capacite = Integer.parseInt(data[2]);
                 } catch (NumberFormatException e) {
-                    System.out.println("Erreur de capacité sur la ligne : " + ligne);
+                    // System.out.println("Erreur de capacité sur la ligne : " + ligne);
                     continue;
                 }
                 Avion avion = new Avion(immatriculation, modele, capacite);
                 avionsImportes.add(avion);
+                ajouterAvion(avion);
             }
         } catch (IOException e) {
-            System.err.println("Erreur lors de la lecture du fichier TXT : " + e.getMessage());
+            // System.err.println("Erreur lors de la lecture du fichier TXT : " + e.getMessage());
         }
         return avionsImportes;
+    }
+
+    public static List<Avion> getListeAvions() {
+        return listeAvions;
     }
 }
