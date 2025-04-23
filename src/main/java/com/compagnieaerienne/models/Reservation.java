@@ -131,7 +131,7 @@ public class Reservation {
         List<Reservation> resultat = new ArrayList<>();
         try (BufferedReader reader = new BufferedReader(new FileReader(cheminFichier))) {
             String ligne;
-            reader.readLine(); // ignorer l'en-tête
+            reader.readLine(); // ignorer l'entête
             while ((ligne = reader.readLine()) != null) {
                 String[] data = ligne.split(";");
                 if (data.length == 4 && data[3].equalsIgnoreCase(passeport)) {
